@@ -6,6 +6,8 @@ const graphql = require("graphql")
 const { GraphQLObjectType, GraphQLSchema, GraphQLList, GraphQLID, GraphQLInt, GraphQLString } = graphql
 const { graphqlHTTP } = require("express-graphql")
 
+//Add to test 
+
 const UserType = new GraphQLObjectType({
     name: "User",
     fields: () => ({

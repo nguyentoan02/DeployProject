@@ -10,20 +10,38 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
+
+      - name: Install Docker (nếu chưa có)
+        run: |
+          sudo apt update
+          sudo apt install -y docker.io
+
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
       - name: Build Docker image
-        run: docker build -t integrationninjas/nodejs-app .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/nodejs-app .
+
       - name: Publish image to Docker Hub
-        run: docker push integrationninjas/nodejs-app:latest
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
 
   deploy:
     needs: build
-    runs-on: aws-ec2
+    runs-on: [aws-ec2]
     steps:
+      - name: Install Docker (nếu chưa có)
+        run: |
+          sudo apt update
+          sudo apt install -y docker.io
+
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
       - name: Pull image from Docker Hub
-        run: docker pull integrationninjas/nodejs-app:latest
-      - name: Delete old container
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/nodejs-app:latest
+
+      - name: Delete old container (nếu có)
         run: docker rm -f nodejs-app-container || true
+
       - name: Run Docker container
-        run: docker run -d -p 5000:5000 --name nodejs-app-container integrationninjas/nodejs-app
+        run: docker run -d -p 5000:5000 --name nodejs-app-container ${{ secrets.DOCKER_USERNAME }}/nodejs-app
